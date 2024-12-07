@@ -6,7 +6,6 @@ import (
 	"os"
 )
 
-
 func main() {
 	fmt.Println("Day 3")
 
