@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func main() {
@@ -27,7 +28,9 @@ func main() {
 	var muls []MulExpression
 
 	for {
-		if tokenizer.ch == 0 { break }
+		if tokenizer.ch == 0 {
+			break
+		}
 		mul := tokenizer.nextMul()
 		muls = append(muls, mul)
 	}
@@ -36,19 +39,21 @@ func main() {
 }
 
 type MulExpression struct {
-	LeftNumber int
+	LeftNumber  int
 	RightNumber int
 }
 
 type Tokenizer struct {
-	input string
-	ch byte
-	position int // position of current char
+	input        string
+	ch           byte
+	position     int // position of current char
 	readPosition int // position of read in input (after current char)
+	isMulEnabled bool
 }
 
 func NewTokenizer(input string) *Tokenizer {
-	tokenizer := &Tokenizer{input:input}
+	tokenizer := &Tokenizer{input: input}
+	tokenizer.isMulEnabled = true
 	tokenizer.readChar()
 	return tokenizer
 }
@@ -67,10 +72,16 @@ func (tokenizer *Tokenizer) nextMul() MulExpression {
 	tokenizer.ignoreExtraChars()
 
 	for tokenizer.ch != 0 {
-		ok, mul := tokenizer.readMul();
+		ok, mul := tokenizer.readMul()
 		if ok {
+			fmt.Println(mul)
 			return mul
 		}
+
+		if tokenizer.ch == 'd' {
+		tokenizer.readDoAndDont()
+		}
+
 		tokenizer.ignoreExtraChars()
 	}
 
@@ -82,22 +93,26 @@ func (tokenizer *Tokenizer) nextMul() MulExpression {
 func (tokenizer *Tokenizer) readMul() (bool, MulExpression) {
 	var mul MulExpression
 	if tokenizer.ch != 'm' {
-		return false, mul 
+		return false, mul
 	}
 	tokenizer.readChar()
 
+	if !tokenizer.isMulEnabled {
+		return false, mul
+	}
+
 	if tokenizer.ch != 'u' {
-		return false, mul 
+		return false, mul
 	}
 	tokenizer.readChar()
 
 	if tokenizer.ch != 'l' {
-		return false, mul 
+		return false, mul
 	}
 	tokenizer.readChar()
 
 	if tokenizer.ch != '(' {
-		return false, mul 
+		return false, mul
 	}
 	tokenizer.readChar()
 
@@ -111,7 +126,7 @@ func (tokenizer *Tokenizer) readMul() (bool, MulExpression) {
 	}
 
 	if tokenizer.ch != ',' {
-		return false, mul 
+		return false, mul
 	}
 	tokenizer.readChar()
 
@@ -125,13 +140,28 @@ func (tokenizer *Tokenizer) readMul() (bool, MulExpression) {
 	}
 
 	if tokenizer.ch != ')' {
-		return false, mul 
+		return false, mul
 	}
 	tokenizer.readChar()
 
 	mul.LeftNumber = leftNumber
 	mul.RightNumber = rightNumber
 	return true, mul
+}
+
+func (tokenizer *Tokenizer) readDoAndDont() {
+	fmt.Println("found a d: ", string(tokenizer.ch))
+	maybeDont := tokenizer.input[tokenizer.position : tokenizer.position+7]
+	if maybeDont == "don't()" {
+		tokenizer.isMulEnabled = false
+	}
+
+	if strings.HasPrefix(maybeDont, "do()") {
+		tokenizer.isMulEnabled = true
+	}
+
+	tokenizer.readChar()
+	return
 }
 
 func (tokenizer *Tokenizer) readNumber() int {
@@ -149,9 +179,8 @@ func (tokenizer *Tokenizer) readNumber() int {
 }
 
 func (tokenizer *Tokenizer) ignoreExtraChars() {
-	for tokenizer.ch != 'm' {
+	for tokenizer.ch != 'm' && tokenizer.ch != 'd' && tokenizer.ch != 0 {
 		tokenizer.readChar()
-		if tokenizer.ch == 0 { break }
 	}
 }
 
