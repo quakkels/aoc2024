@@ -6,23 +6,25 @@ import (
 )
 
 func TestNextToken(t *testing.T) {
-	input := "1(,)"
+	input := " mul(123,3)"
 	tests := []struct {
 		expectedType    token.TokenType
 		expectedLiteral string
 	}{
-		{token.INT, "1"},
+		{token.MUL, "mul"},
 		{token.LPAREN, "("},
+		{token.INT, "123"},
 		{token.COMMA, ","},
+		{token.INT, "3"},
 		{token.RPAREN, ")"},
 		{token.EOF, ""},
 	}
 
-	l := NewLexer(input)
+	l := New(input)
 
 	for _, tt := range tests {
 		tok := l.NextToken()
-
+		t.Log("Literal:", tok.Literal)
 		if tok.Type != tt.expectedType {
 			t.Fatal("expected:", tt.expectedType, "actual:", tok.Type)
 		}
