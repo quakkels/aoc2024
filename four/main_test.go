@@ -93,4 +93,16 @@ func TestCounter(t *testing.T) {
 	if count != 9 {
 		t.Fatal("6> Fail to find 9 X's. Expect: 9, Actual:", count)
 	}
+	
+	grid = []string{}
+	grid = append(grid, "S.M..")
+	grid = append(grid, ".A...")
+	grid = append(grid, "S.M.S")
+	grid = append(grid, "...A.")
+	grid = append(grid, "..M.S")
+	count = countWordInstances(grid, "MAS")
+	if count != 2 {
+		t.Fatal("7> Fail to find X. Expect: 2, Actual:", count)
+	}
 }
+

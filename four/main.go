@@ -7,18 +7,6 @@ import (
 	"os"
 )
 
-var directions = [][]int{
-	// i  j
-	{-1, -1}, // up left
-	// {-1, 0},  // up center
-	{-1, 1}, // up right
-	// {0, -1},  // center left
-	// {0, 1},   // center right
-	{1, -1}, // bottom left
-	// {1, 0},   // bottom center
-	{1, 1},   // bottom right
-}
-
 func main() {
 	fmt.Println("Day 4")
 
@@ -43,7 +31,7 @@ func main() {
 		grid = append(grid, text)
 	}
 
-	result := countWordInstances(grid, "XMAS")
+	result := countWordInstances(grid, "MAS")
 	fmt.Println("Result>", result)
 }
 
@@ -60,37 +48,56 @@ func isOutOfBounds(height, width, i, j int) bool {
 func countWordInstances(grid []string, word string) int {
 
 	log.Println("Counting...")
-	height := len(grid)
-	width := len(grid[0])
 	count := 0
 
 	for i := range grid {
 		for j := range grid[i] {
-			//log.Println("i:", i, " j:", j)
-			foundMatch := false
-			for k := range directions {
-				offsetI := 0
-				offsetJ := 0
-				foundMatch = true
-				for l := range word {
-					var currentI, currentJ = i + offsetI, j + offsetJ
-					if isOutOfBounds(height, width, currentI, currentJ) {
-						foundMatch = false
-						break
-					}
-					if grid[currentI][currentJ] != word[l] {
-						foundMatch = false
-						break
-					}
-					offsetI += directions[k][0]
-					offsetJ += directions[k][1]
+			foundBackSlash := checkLine(grid, word, i, j, 1, 1) // direction south east
+			if foundBackSlash {
+				foundForwardSlash := checkLine(grid, word, i, j + 2, 1, -1) // direction south west
+				if foundForwardSlash {
+					count++
 				}
+				foundForwardSlash = checkLine(grid, word, i+2, j, -1, 1) // direction north east
+				if foundForwardSlash {
+					count++
+				}
+			}
 
-				if foundMatch {
-					count += 1
+			foundBackSlash = checkLine(grid, word, i, j, -1, -1) // direction north west
+			if foundBackSlash {
+				foundForwardSlash := checkLine(grid, word, i-2, j, 1, -1) // direction south west
+				if foundForwardSlash {
+					count++
+				}
+				foundForwardSlash = checkLine(grid, word, i, j-2, -1, 1) // direction north east
+				if foundForwardSlash {
+					count++
 				}
 			}
 		}
 	}
 	return count
+}
+
+func checkLine(grid []string, word string, i, j, directionI, directionJ int) bool {
+	height := len(grid)
+	width := len(grid[0])
+	offsetI := 0
+	offsetJ := 0
+	foundMatch := true
+	for l := range word {
+		var currentI, currentJ = i + offsetI, j + offsetJ
+		if isOutOfBounds(height, width, currentI, currentJ) {
+			foundMatch = false
+			break
+		}
+		if grid[currentI][currentJ] != word[l] {
+			foundMatch = false
+			break
+		}
+		offsetI += directionI
+		offsetJ += directionJ
+	}
+	return foundMatch
 }
