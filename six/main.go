@@ -31,7 +31,7 @@ func main() {
 		input = append(input, text)
 	}
 
-	p1 := newPart1(input)
+	p1 := newDay6(input)
 	result1 := p1.part1()
 	fmt.Println("part1>", result1)
 }
@@ -59,7 +59,7 @@ func (hs *PositionsHashSet) Size() int {
 	return len(hs.hashSet)
 }
 
-type part1 struct {
+type day6 struct {
 	input []string
 	directions [4]byte
 	currentDirection byte
@@ -68,64 +68,64 @@ type part1 struct {
 	visitedPositions PositionsHashSet
 }
 
-func newPart1(input []string) part1{
-	p1 := part1{}
+func newDay6(input []string) day6{
+	d6 := day6{}
 
-	p1.directions = [4]byte {
+	d6.directions = [4]byte {
 		'>',
 		'v',
 		'<',
 		'^',
 	}
 
-	p1.vectors = make(map[byte][2]int)
-	p1.vectors['>'] = [2]int{0, 1} // east
-	p1.vectors['v'] = [2]int{1, 0} // south
-	p1.vectors['<'] = [2]int{0, -1} // west
-	p1.vectors['^'] = [2]int{-1, 0} // north
+	d6.vectors = make(map[byte][2]int)
+	d6.vectors['>'] = [2]int{0, 1} // east
+	d6.vectors['v'] = [2]int{1, 0} // south
+	d6.vectors['<'] = [2]int{0, -1} // west
+	d6.vectors['^'] = [2]int{-1, 0} // north
 
-	p1.input = input
+	d6.input = input
 
-	p1.currentPosition, p1.currentDirection = p1.findStart()
+	d6.currentPosition, d6.currentDirection = d6.findStart()
 
-	p1.visitedPositions = newPositionsHashSet()
-	p1.visitedPositions.Add(p1.currentPosition)
+	d6.visitedPositions = newPositionsHashSet()
+	d6.visitedPositions.Add(d6.currentPosition)
 
-	return p1
+	return d6
 }
 
-func (p1 *part1) part1() int {
+func (d6 *day6) part1() int {
 	for {
 		// move one cell
-		nexti := p1.currentPosition[0] + p1.vectors[p1.currentDirection][0]
-		nextj := p1.currentPosition[1] + p1.vectors[p1.currentDirection][1]
+		nexti := d6.currentPosition[0] + d6.vectors[d6.currentDirection][0]
+		nextj := d6.currentPosition[1] + d6.vectors[d6.currentDirection][1]
 
-		isObstacle, isOffMap := p1.isObstacle(nexti, nextj)
+		isObstacle, isOffMap := d6.isObstacle(nexti, nextj)
 		if isObstacle {
 			if isOffMap {
 				break // off the edge of the world
 			}
 			// so turn and try again
 			// the next cell is a wall
-			p1.currentDirection = p1.getRightTurn()
+			d6.currentDirection = d6.getRightTurn()
 			continue
 		}
 
 		// we move
-		p1.currentPosition[0] = nexti
-		p1.currentPosition[1] = nextj
-		p1.visitedPositions.Add(p1.currentPosition)
+		d6.currentPosition[0] = nexti
+		d6.currentPosition[1] = nextj
+		d6.visitedPositions.Add(d6.currentPosition)
 	}
 
-	return p1.visitedPositions.Size()
+	return d6.visitedPositions.Size()
 }
 
-func (p1 *part1) findStart() ([2]int, byte) {
-	for i := range p1.input {
-		for j := range p1.input[i] {
-			_, exists := p1.vectors[p1.input[i][j]]
+func (d6 *day6) findStart() ([2]int, byte) {
+	for i := range d6.input {
+		for j := range d6.input[i] {
+			_, exists := d6.vectors[d6.input[i][j]]
 			if exists {
-				return [2]int {i, j}, p1.input[i][j]
+				return [2]int {i, j}, d6.input[i][j]
 			}
 		}
 	}
@@ -133,32 +133,32 @@ func (p1 *part1) findStart() ([2]int, byte) {
 	return [2]int{-1,-1}, 0 
 }
 
-func (p1 *part1) isInbounds() bool {
-	return len(p1.input) > p1.currentPosition[0] && len(p1.input[0]) > p1.currentPosition[1]
+func (d6 *day6) isInbounds() bool {
+	return len(d6.input) > d6.currentPosition[0] && len(d6.input[0]) > d6.currentPosition[1]
 }
 
-func (p1 *part1) getRightTurn() byte {
+func (d6 *day6) getRightTurn() byte {
 	// oof, what am I doing here?
 	nextIndex := 0
-	for i := range p1.directions {
-		if p1.directions[i] == p1.currentDirection {
+	for i := range d6.directions {
+		if d6.directions[i] == d6.currentDirection {
 			nextIndex = i + 1
 		}
 	}
 
-	if nextIndex >= len(p1.directions) {
+	if nextIndex >= len(d6.directions) {
 		nextIndex = 0
 	}
-	return p1.directions[nextIndex]
+	return d6.directions[nextIndex]
 }
 
-func (p1 *part1) isObstacle(i, j int) (isObstacle, isOffMap bool) {
-	if len(p1.input) <= i ||  i < 0 {
+func (d6 *day6) isObstacle(i, j int) (isObstacle, isOffMap bool) {
+	if len(d6.input) <= i ||  i < 0 {
 		return true, true
 	}
-	if len(p1.input[0]) <= j ||  j < 0 {
+	if len(d6.input[0]) <= j ||  j < 0 {
 		return true, true
 	}
-	return p1.input[i][j] == '#', false
+	return d6.input[i][j] == '#', false
 }
 
