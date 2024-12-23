@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 )
 
 func main() {
@@ -38,23 +37,21 @@ func main() {
 }
 
 type PositionsHashSet struct {
-	hashSet map[string]struct{}
+	hashSet map[[2]int]struct{}
 }
 
 func newPositionsHashSet() PositionsHashSet {
 	return PositionsHashSet{
-		hashSet: make(map[string]struct{}),
+		hashSet: make(map[[2]int]struct{}),
 	}
 }
 
-func (hs *PositionsHashSet) Add(value []int) {
-	var key string = strconv.Itoa(value[0]) + strconv.Itoa(value[1])
-	hs.hashSet[key] = struct{}{}
+func (hs *PositionsHashSet) Add(value [2]int) {
+	hs.hashSet[value] = struct{}{}
 }
 
-func (hs *PositionsHashSet) Contains(value []int) bool {
-	var key string = strconv.Itoa(value[0]) + strconv.Itoa(value[1])
-	_, ok := hs.hashSet[key]
+func (hs *PositionsHashSet) Contains(value [2]int) bool {
+	_, ok := hs.hashSet[value]
 	return ok
 }
 
@@ -64,28 +61,28 @@ func (hs *PositionsHashSet) Size() int {
 
 type part1 struct {
 	input []string
-	directions []byte
+	directions [4]byte
 	currentDirection byte
-	currentPosition []int
-	vectors map[byte][]int
+	currentPosition [2]int
+	vectors map[byte][2]int
 	visitedPositions PositionsHashSet
 }
 
 func newPart1(input []string) part1{
 	p1 := part1{}
 
-	p1.directions = []byte {
+	p1.directions = [4]byte {
 		'>',
 		'v',
 		'<',
 		'^',
 	}
 
-	p1.vectors = make(map[byte][]int)
-	p1.vectors['>'] = []int{0, 1} // east
-	p1.vectors['v'] = []int{1, 0} // south
-	p1.vectors['<'] = []int{0, -1} // west
-	p1.vectors['^'] = []int{-1, 0} // north
+	p1.vectors = make(map[byte][2]int)
+	p1.vectors['>'] = [2]int{0, 1} // east
+	p1.vectors['v'] = [2]int{1, 0} // south
+	p1.vectors['<'] = [2]int{0, -1} // west
+	p1.vectors['^'] = [2]int{-1, 0} // north
 
 	p1.input = input
 
@@ -105,17 +102,16 @@ func (p1 *part1) part1() int {
 
 		isObstacle, isOffMap := p1.isObstacle(nexti, nextj)
 		if isObstacle {
-			// the next cell is a wall
-			// so turn and try again
-			p1.currentDirection = p1.getRightTurn()
 			if isOffMap {
 				break // off the edge of the world
 			}
+			// so turn and try again
+			// the next cell is a wall
+			p1.currentDirection = p1.getRightTurn()
 			continue
 		}
 
 		// we move
-
 		p1.currentPosition[0] = nexti
 		p1.currentPosition[1] = nextj
 		p1.visitedPositions.Add(p1.currentPosition)
@@ -124,17 +120,17 @@ func (p1 *part1) part1() int {
 	return p1.visitedPositions.Size()
 }
 
-func (p1 *part1) findStart() ([]int, byte) {
+func (p1 *part1) findStart() ([2]int, byte) {
 	for i := range p1.input {
 		for j := range p1.input[i] {
 			_, exists := p1.vectors[p1.input[i][j]]
 			if exists {
-				return []int {i, j}, p1.input[i][j]
+				return [2]int {i, j}, p1.input[i][j]
 			}
 		}
 	}
 
-	return []int{-1,-1}, 0 
+	return [2]int{-1,-1}, 0 
 }
 
 func (p1 *part1) isInbounds() bool {
@@ -157,10 +153,12 @@ func (p1 *part1) getRightTurn() byte {
 }
 
 func (p1 *part1) isObstacle(i, j int) (isObstacle, isOffMap bool) {
-	if len(p1.input) <= i || len(p1.input[0]) <= j {
+	if len(p1.input) <= i ||  i < 0 {
 		return true, true
 	}
-
+	if len(p1.input[0]) <= j ||  j < 0 {
+		return true, true
+	}
 	return p1.input[i][j] == '#', false
 }
 
